@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVER_IP="192.168.1.57"
+SERVER_IP="10.65.0.58"
 PORT=60000
 
 echo "HELLO" | nc -q 0 $SERVER_IP $PORT
