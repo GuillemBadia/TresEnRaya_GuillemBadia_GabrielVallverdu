@@ -120,8 +120,12 @@ if [[ "$msg" != "HELLO" ]]; then
 fi
 
 # 2.2 Si la connexió és "HELLO", s'envia un "OK" i es continua el programa
+if [[ "$msg" = "HELLO" ]]; then
+  echo "OK" | nc -q 0 $CLIENT_IP $PORT
+fi
 
 # 3 Missatge de benvinguda a la partida
+
 # 3.1 Es printa el tauler buit
 print_board
 
