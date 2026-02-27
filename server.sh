@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 0.1 Constants i variables de configuració global
-CLIENT_IP="192.168.1.82"
+CLIENT_IP="10.65.0.59"
 PORT=60000
 BOARD=(1 2 3 4 5 6 7 8 9)
 
