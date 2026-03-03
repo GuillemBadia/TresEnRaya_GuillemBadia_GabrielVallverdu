@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVER_IP="10.65.0.58"
+SERVER_IP="10.65.0.15"
 PORT=60000
 
 echo "HELLO" | nc -q 0 $SERVER_IP $PORT
@@ -11,39 +11,28 @@ if [[ "$response" != "OK" ]]; then
 fi
 
 while true; do
-
-  echo "Esperant el torn ..."
-
-  # Sacaba el temps despera quan el servidor acaba el torn
   response=$(nc -l -p $PORT)
 
-  # TODO: Gestió de missatges rebuts
-  # SERVER_WIN
-  # CLIENT_WIN
-  # MOVE_CLIENT
-  # ...
-  
-  # == TORN CLIENT ==
-
-  # 4.4 S'envia al client que comença el seu torn
-  echo "Te toca"
-  # 4.5 Es llegeix el moviment del client
-  read -p "Posició del client (1-9): " pos
-  # 4.6 S'actualitza el moviment al tauler
-  board_index=$((pos - 1))
-  BOARD[$board_index]="0"
-  
-  # 4.7 Es comprova si s'ha guanyat (result="WIN" o result="NONE")
-  result=$(check_win)
-  if [[ "$result" == "WIN" ]]; then
-    echo "CLIENT_WIN" | nc -q 0 $SERVER_IP $PORT
-	break
-fi
-  # 4.8 Es printa el tauler
-  print_board
-  # TODO: pregunta posició i s'envia al servidor
-  echo "MOVE $pos" | nc -q 0 $SERVER_IP $PORT
-
-done
+  case "$response" in
+    YOUR_TURN)
+      read -p "Posició (1-9): " pos
+      echo "MOVE $pos" | nc -q 0 $SERVER_IP $PORT
+      ;;
+    SERVER_MOVE*)
+      echo "Servidor ha posat la fitxa"
+      ;;
+    SERVER_WIN)
+      echo "Ha guanyat el servidor!"
+      break
+      ;;
+    CLIENT_WIN)
+      echo "Has guanyat!"
+      break
+      ;;
+    DRAW)
+      echo "Empat!"
+      break
+      ;;
+  esac
 
 exit 0
