@@ -123,7 +123,6 @@ fi
 if [[ "$msg" = "HELLO" ]]; then
   echo "OK" | nc -q 0 $CLIENT_IP $PORT
 fi
-
 # 3 Missatge de benvinguda a la partida
 echo "Benvingut al 3 en raya un joc en el que jugaras amb un company a la mateixa mascara que tu"
 # 3.1 Es printa el tauler buit
@@ -153,7 +152,29 @@ while true; do
   # 4.3 Es printa el tauler
   print_board
 
-  
+  # Envia torn al client
+  echo "YOUR_TURN" | nc -q 0 $CLIENT_IP $PORT
+
+  # Espera moviment del client
+  msg=$(nc -l -p $PORT)
+  if [[ "$msg" =~ MOVE[[:space:]]([1-9]) ]]; then
+      pos_client=${BASH_REMATCH[1]}
+      BOARD[$((pos_client-1))]="$CLIENT_CHAR"
+      print_board
+
+      # Comprovació resultat client
+      result=$(check_win)
+      if [[ "$result" == "WIN" ]]; then
+          echo "CLIENT_WIN" | nc -q 0 $CLIENT_IP $PORT
+          break
+      fi
+
+      # Comprovació empat
+      if [[ ! " ${BOARD[@]} " =~ [1-9] ]]; then
+          echo "DRAW" | nc -q 0 $CLIENT_IP $PORT
+          break
+      fi
+  fi
 
 done
 
