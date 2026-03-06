@@ -123,10 +123,11 @@ fi
 if [[ "$msg" = "HELLO" ]]; then
   echo "OK" | nc -q 0 $CLIENT_IP $PORT
 fi
+
 # 3 Missatge de benvinguda a la partida
 echo "Benvingut al 3 en raya un joc en el que jugaras amb un company a la mateixa mascara que tu"
 # 3.1 Es printa el tauler buit
-print_board
+print_board()
 
 # 4 GameLoop
 while true; do
@@ -150,31 +151,37 @@ while true; do
   fi
 
   # 4.3 Es printa el tauler
-  print_board
+  print_board()
 
-  # Envia torn al client
-  echo "YOUR_TURN" | nc -q 0 $CLIENT_IP $PORT
+  # == 4.2 TORN CLIENT ==
+		
+  # 4.2.1 S'envia al client que comenci el seu torn
+  echo "MOVE_CLIENT" | nc -q 0 $CLIENT_IP $PORT
+  
+  # 4.2.2 Bucle per esperar una posició vàlida
+  while true; then
+	# 4.2.3 S'escolta a la xarxa esperant la nova posició
+  	response=$(nc -l -p $PORT)
+	# 4.2.4 Es comprova si la posició és vàlida (valid_pos="VALID" o valid_pos="NOT_VALID")
+	# TODO: extreure posició del missatge rebut (podria ser "MOVE pos")
+	valid_pos=$(check_valid_pos "$response")
+	
+	# 4.2.5 Si la posició no és vàlida, es demana una altra posició al client
+	if [[ "$response" == "NOT_VALID" ]]; then
+		echo "MOVE_CLIENT" | nc -q 0 $CLIENT_IP $PORT
+		break;
+	fi
+	# 4.2.6 Si la posició és vàlida, s'actualitza el tauler i s'informa al client
+	if [[ "$response" == "VALID" ]]; then
+		print_board()
+		echo "MOVE_SERVER" | nc -q 0 $CLIENT_IP $PORT
+		break;
+	fi
+  done
 
-  # Espera moviment del client
-  msg=$(nc -l -p $PORT)
-  if [[ "$msg" =~ MOVE[[:space:]]([1-9]) ]]; then
-      pos_client=${BASH_REMATCH[1]}
-      BOARD[$((pos_client-1))]="$CLIENT_CHAR"
-      print_board
-
-      # Comprovació resultat client
-      result=$(check_win)
-      if [[ "$result" == "WIN" ]]; then
-          echo "CLIENT_WIN" | nc -q 0 $CLIENT_IP $PORT
-          break
-      fi
-
-      # Comprovació empat
-      if [[ ! " ${BOARD[@]} " =~ [1-9] ]]; then
-          echo "DRAW" | nc -q 0 $CLIENT_IP $PORT
-          break
-      fi
-  fi
+  # -- No fa falta comprovar si hi ha un empat perquè mai es donarà el cas d'un empat després del torn del client
+  # 4.2.7 Es comprova si s'ha guanyat (result="WIN" o result="NONE") i s'informa al client si ho és
+  # 4.2.8 Es printa el tauler
 
 done
 
