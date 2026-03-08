@@ -133,23 +133,25 @@ print_board()
 while true; do
 
   # == TORN SERVIDOR ==
-
+	valid_pos=false
+	while valid_pos==false; do
   # 4.1 Es demana una posició al jugador servidor
   # pos - guarda linput de lusuari
   read -p "Posició del servidor (1-9): " pos
   # board_index - guarda el resultat de $(( ... ))
-  board_index=$((pos - 1))
-  # assigna "O" a la casella BOARD[...]
-  BOARD[$board_index]="O"
-
-  # 4.2 Es comprova si s'ha guanyat (result="WIN" o result="NONE")
-  result=$(check_win)
-  if [[ "$result" == "WIN" ]]; then
-    # S'envia un "SERVER_WIN" al client
-    echo "SERVER_WIN" | nc -q 0 $CLIENT_IP $PORT
-    break
-  fi
-
+  valid_pos=$(check_valid_pos "$pos")
+	  board_index=$((pos - 1))
+	  # assigna "O" a la casella BOARD[...]
+	  BOARD[$board_index]="O"
+	
+	  # 4.2 Es comprova si s'ha guanyat (result="WIN" o result="NONE")
+	  result=$(check_win)
+	  if [[ "$result" == "WIN" ]]; then
+	    # S'envia un "SERVER_WIN" al client
+	    echo "SERVER_WIN" | nc -q 0 $CLIENT_IP $PORT
+	    break
+	  fi
+	done
   # 4.3 Es printa el tauler
   print_board()
 
